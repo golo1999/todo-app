@@ -66,6 +66,8 @@ export function App() {
     inputRef.current.value = "";
   }
 
+  const isTodoListVisible = todos.length > 0;
+
   return (
     <Container.Main>
       <Container.Content>
@@ -81,7 +83,7 @@ export function App() {
             onClick={handleAddTodoIconClick}
           />
         </Container.Input>
-        <TodoList todos={todos} />
+        {isTodoListVisible && <TodoList todos={todos} />}
       </Container.Content>
     </Container.Main>
   );

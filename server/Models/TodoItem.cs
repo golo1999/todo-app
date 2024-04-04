@@ -11,5 +11,7 @@ namespace server.Models
         public required string Name { get; set; }
         [Required]
         public bool IsComplete { get; set; }
+        [Required]
+        public required string DateTime { get; set; }
     }
 }

@@ -58,7 +58,11 @@ export function App() {
 
     const todoName = inputRef.current?.value.trim();
 
-    addTodo({ isComplete: false, name: todoName });
+    addTodo({
+      isComplete: false,
+      name: todoName,
+      dateTime: new Date().getTime().toString(),
+    });
     inputRef.current.value = "";
   }
 
@@ -69,6 +73,7 @@ export function App() {
           <Input
             placeholder="Create a new todo..."
             ref={inputRef}
+            spellCheck={false}
             onChange={handleInputChange}
           />
           <Icon.AddTodo

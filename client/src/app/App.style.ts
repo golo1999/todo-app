@@ -38,4 +38,6 @@ export const Icon = {
 export const Input = styled.input.attrs({ type: "text" })`
   color: black;
   flex: 1;
+  font-size: 17px;
+  font-weight: 500;
 `;

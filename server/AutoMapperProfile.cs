@@ -7,6 +7,7 @@ namespace server
     {
         public AutoMapperProfile()
         {
+            CreateMap<TodoItem, TodoItemDto>();
             CreateMap<TodoItemDto, TodoItem>();
         }
     }

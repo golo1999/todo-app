@@ -1,49 +1,11 @@
 import axios from "axios";
-import { useMemo, useState } from "react";
-import styled from "styled-components";
+import { useCallback, useMemo, useState } from "react";
 
-import { Todo } from "models";
+import { JsonPatchOperation, Todo } from "models";
 
 import { Item } from "./Item";
 
-interface StatusContainerProps {
-  $isSelected: boolean;
-}
-
-const Container = {
-  Footer: styled.div`
-    align-items: center;
-    color: gray;
-    display: flex;
-    font-weight: 600;
-    gap: 1rem;
-    justify-content: space-between;
-    padding: 1rem;
-  `,
-  Main: styled.div`
-    background-color: white;
-    border-radius: 0.25rem;
-    box-shadow: 0 0 5px darkgray;
-  `,
-  Status: styled.li<StatusContainerProps>`
-    ${({ $isSelected }) => $isSelected && "color: royalblue;"};
-  `,
-};
-
-const List = {
-  Statuses: styled.ul`
-    align-items: center;
-    display: flex;
-    gap: 0.5rem;
-    list-style-type: none;
-    user-select: none;
-  `,
-  Todos: styled.ul`
-    display: flex;
-    flex-direction: column;
-    list-style-type: none;
-  `,
-};
+import { Container, List } from "./TodoList.style";
 
 const TODO_LIST_STATUSES = ["ALL", "ACTIVE", "COMPLETED"] as const;
 
@@ -60,6 +22,36 @@ export function TodoList({ todos }: Props) {
     try {
       await axios.delete(`api/TodoItems/${id}`);
       console.log("removed");
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+
+  const handleCheckboxValueChange = useCallback(
+    (todoId: number, todoIsCompleted: boolean) => {
+      const body: JsonPatchOperation[] = [
+        {
+          path: "/isComplete",
+          op: "replace",
+          value: todoIsCompleted,
+        },
+      ];
+
+      patchTodo(todoId, body);
+    },
+    []
+  );
+  const handleClearCompletedClick = useCallback(async () => {
+    try {
+      await axios.delete("api/TodoItems/completed");
+    } catch (error) {
+      console.log({ error });
+    }
+  }, []);
+
+  async function patchTodo(id: number, body: JsonPatchOperation[]) {
+    try {
+      await axios.patch(`api/TodoItems/${id}`, body);
     } catch (error) {
       console.log({ error });
     }
@@ -90,6 +82,9 @@ export function TodoList({ todos }: Props) {
           <Item
             key={todo.id}
             todo={todo}
+            onCheckboxValueChange={(value) =>
+              handleCheckboxValueChange(todo.id, value)
+            }
             onDeleteIconClick={() => deleteTodo(todo.id)}
           />
         ))}
@@ -117,7 +112,9 @@ export function TodoList({ todos }: Props) {
             );
           })}
         </List.Statuses>
-        <p style={{ userSelect: "none" }}>Clear Completed</p>
+        <p style={{ userSelect: "none" }} onClick={handleClearCompletedClick}>
+          Clear Completed
+        </p>
       </Container.Footer>
     </Container.Main>
   );

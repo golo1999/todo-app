@@ -38,3 +38,15 @@ export const List = {
     list-style-type: none;
   `,
 };
+
+interface ClearCompletedTextProps {
+  $isHidden: boolean;
+}
+
+export const Text = {
+  ClearCompleted: styled.p<ClearCompletedTextProps>`
+    text-transform: capitalize;
+    user-select: none;
+    ${({ $isHidden }) => $isHidden && "visibility: hidden;"};
+  `,
+};

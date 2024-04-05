@@ -44,8 +44,8 @@ export function Item({
   return (
     <Container.Main>
       <Checkbox
+        checked={isComplete}
         color="primary"
-        defaultChecked={isComplete}
         inputProps={{ "aria-label": "controlled" }}
         style={{ padding: 0 }}
         sx={{ "& .MuiSvgIcon-root": { fontSize: 32 } }}

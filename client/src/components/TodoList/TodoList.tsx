@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { DeleteDialog, UpdateNameDialog } from "components";
 import { JsonPatchOperation, Todo } from "models";
+import { useTodoStore } from "store";
 
 import { Item } from "./Item";
 
@@ -12,25 +13,32 @@ const TODO_LIST_STATUSES = ["ALL", "ACTIVE", "COMPLETED"] as const;
 
 type TodoListStatus = (typeof TODO_LIST_STATUSES)[number];
 
-interface Props {
-  todos: Todo[];
-}
-
-export function TodoList({ todos }: Props) {
+export function TodoList() {
   const deletedTodoRef = useRef<Todo | null>(null);
   const updatedTodoRef = useRef<Todo | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isUpdateNameDialogOpen, setIsUpdateNameDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<TodoListStatus>("ALL");
+  const {
+    todoList,
+    removeCompletedTodos,
+    removeTodo,
+    updateTodoCompleteStatus,
+    updateTodoName,
+  } = useTodoStore();
 
-  const deleteTodo = useCallback(async (id: number) => {
-    try {
-      await axios.delete(`api/TodoItems/${id}`);
-      console.log("removed");
-    } catch (error) {
-      console.log({ error });
-    }
-  }, []);
+  const deleteTodo = useCallback(
+    async (id: number) => {
+      try {
+        await axios.delete(`api/TodoItems/${id}`);
+        removeTodo(id);
+        console.log("removed");
+      } catch (error) {
+        console.log({ error });
+      }
+    },
+    [removeTodo]
+  );
   const patchTodo = useCallback(
     async (id: number, body: JsonPatchOperation[]) => {
       try {
@@ -48,26 +56,28 @@ export function TodoList({ todos }: Props) {
     []
   );
   const handleCheckboxValueChange = useCallback(
-    (todoId: number, todoIsCompleted: boolean) => {
+    (todoId: number, isTodoCompleted: boolean) => {
       const body: JsonPatchOperation[] = [
         {
           path: "/isComplete",
           op: "replace",
-          value: todoIsCompleted,
+          value: isTodoCompleted,
         },
       ];
 
       patchTodo(todoId, body);
+      updateTodoCompleteStatus(todoId, isTodoCompleted);
     },
-    [patchTodo]
+    [patchTodo, updateTodoCompleteStatus]
   );
   const handleClearCompletedClick = useCallback(async () => {
     try {
       await axios.delete("api/TodoItems/completed");
+      removeCompletedTodos();
     } catch (error) {
       console.log({ error });
     }
-  }, []);
+  }, [removeCompletedTodos]);
   const handleDeleteTodoClick = useCallback(() => {
     if (deletedTodoRef.current) {
       deleteTodo(deletedTodoRef.current.id);
@@ -92,23 +102,24 @@ export function TodoList({ todos }: Props) {
         ];
 
         patchTodo(updatedTodoRef.current.id, body);
+        updateTodoName(updatedTodoRef.current.id, updatedName);
         updatedTodoRef.current = null;
       }
       closeUpdateNameDialog();
     },
-    [closeUpdateNameDialog, patchTodo]
+    [closeUpdateNameDialog, patchTodo, updateTodoName]
   );
 
   const filteredTodos = useMemo(() => {
     switch (selectedStatus) {
       case "ACTIVE":
-        return todos.filter((todo) => !todo.isComplete);
+        return todoList.filter((todo) => !todo.isComplete);
       case "ALL":
-        return todos;
+        return todoList;
       case "COMPLETED":
-        return todos.filter((todo) => todo.isComplete);
+        return todoList.filter((todo) => todo.isComplete);
     }
-  }, [selectedStatus, todos]);
+  }, [selectedStatus, todoList]);
   const completedTodos = useMemo(
     () => filteredTodos.filter((todo) => todo.isComplete),
     [filteredTodos]

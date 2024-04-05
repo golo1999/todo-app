@@ -3,13 +3,14 @@ import { ChangeEvent, createRef, useEffect, useState } from "react";
 
 import { TodoList } from "components";
 import { Todo, TodoDto } from "models";
+import { useTodoStore } from "store";
 
 import { Container, Icon, Input } from "./App.style";
 
 export function App() {
   const inputRef = createRef<HTMLInputElement>();
   const [isAddTodoIconVisible, setIsAddTodoIconVisible] = useState(false);
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const { todoList, addTodo, setTodoList } = useTodoStore();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -19,7 +20,7 @@ export function App() {
         const { data } = await axios.get<Todo[]>("api/TodoItems", {
           signal: controller.signal,
         });
-        setTodos(data);
+        setTodoList(data);
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log({ cancelError: error });
@@ -32,14 +33,14 @@ export function App() {
     getTodos();
 
     return () => controller.abort();
-  }, []);
+  }, [setTodoList]);
 
-  async function addTodo(todo: TodoDto) {
+  async function createTodo(todo: TodoDto) {
     try {
-      const { data } = await axios.post<Todo>("api/TodoItems", {
+      const { data: newTodo } = await axios.post<Todo>("api/TodoItems", {
         ...todo,
       });
-      console.log({ newTodo: data });
+      addTodo(newTodo);
     } catch (error) {
       console.log({ error });
     }
@@ -58,7 +59,7 @@ export function App() {
 
     const todoName = inputRef.current?.value.trim();
 
-    addTodo({
+    createTodo({
       isComplete: false,
       name: todoName,
       dateTime: new Date().getTime().toString(),
@@ -66,7 +67,7 @@ export function App() {
     inputRef.current.value = "";
   }
 
-  const isTodoListVisible = todos.length > 0;
+  const isTodoListVisible = todoList.length > 0;
 
   return (
     <Container.Main>
@@ -83,7 +84,7 @@ export function App() {
             onClick={handleAddTodoIconClick}
           />
         </Container.Input>
-        {isTodoListVisible && <TodoList todos={todos} />}
+        {isTodoListVisible && <TodoList />}
       </Container.Content>
     </Container.Main>
   );

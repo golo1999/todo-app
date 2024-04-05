@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useCallback, useMemo, useRef, useState } from "react";
 
-import { DeleteDialog } from "components";
+import { DeleteDialog, UpdateNameDialog } from "components";
 import { JsonPatchOperation, Todo } from "models";
 
 import { Item } from "./Item";
@@ -18,7 +18,9 @@ interface Props {
 
 export function TodoList({ todos }: Props) {
   const deletedTodoRef = useRef<Todo | null>(null);
+  const updatedTodoRef = useRef<Todo | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isUpdateNameDialogOpen, setIsUpdateNameDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<TodoListStatus>("ALL");
 
   const deleteTodo = useCallback(async (id: number) => {
@@ -41,6 +43,10 @@ export function TodoList({ todos }: Props) {
   );
 
   const closeDeleteDialog = useCallback(() => setIsDeleteDialogOpen(false), []);
+  const closeUpdateNameDialog = useCallback(
+    () => setIsUpdateNameDialogOpen(false),
+    []
+  );
   const handleCheckboxValueChange = useCallback(
     (todoId: number, todoIsCompleted: boolean) => {
       const body: JsonPatchOperation[] = [
@@ -70,6 +76,28 @@ export function TodoList({ todos }: Props) {
     closeDeleteDialog();
   }, [closeDeleteDialog, deleteTodo]);
   const openDeleteDialog = useCallback(() => setIsDeleteDialogOpen(true), []);
+  const openUpdateNameDialog = useCallback(
+    () => setIsUpdateNameDialogOpen(true),
+    []
+  );
+  const handleUpdateTodoNameClick = useCallback(
+    (updatedName: string) => {
+      if (updatedTodoRef.current) {
+        const body: JsonPatchOperation[] = [
+          {
+            path: "/name",
+            op: "replace",
+            value: updatedName,
+          },
+        ];
+
+        patchTodo(updatedTodoRef.current.id, body);
+        updatedTodoRef.current = null;
+      }
+      closeUpdateNameDialog();
+    },
+    [closeUpdateNameDialog, patchTodo]
+  );
 
   const filteredTodos = useMemo(() => {
     switch (selectedStatus) {
@@ -104,12 +132,22 @@ export function TodoList({ todos }: Props) {
         onClose={closeDeleteDialog}
         onDelete={handleDeleteTodoClick}
       />
+      <UpdateNameDialog
+        currentName={updatedTodoRef.current?.name}
+        isOpen={isUpdateNameDialogOpen}
+        onClose={closeUpdateNameDialog}
+        onUpdate={handleUpdateTodoNameClick}
+      />
       <Container.Main>
         <List.Todos>
           {filteredTodos.map((todo) => {
             function handleDeleteIconClick() {
               deletedTodoRef.current = todo;
               openDeleteDialog();
+            }
+            function handleEditIconClick() {
+              updatedTodoRef.current = todo;
+              openUpdateNameDialog();
             }
 
             const { id } = todo;
@@ -122,6 +160,7 @@ export function TodoList({ todos }: Props) {
                   handleCheckboxValueChange(id, value)
                 }
                 onDeleteIconClick={handleDeleteIconClick}
+                onEditIconClick={handleEditIconClick}
               />
             );
           })}

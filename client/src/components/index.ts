@@ -1,2 +1,2 @@
-export { DeleteDialog } from "./Dialog";
+export * from "./Dialog";
 export { TodoList } from "./TodoList";

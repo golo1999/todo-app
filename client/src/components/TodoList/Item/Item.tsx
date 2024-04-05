@@ -9,12 +9,14 @@ interface Props {
   todo: Todo;
   onCheckboxValueChange: (value: boolean) => void;
   onDeleteIconClick: () => void;
+  onEditIconClick: () => void;
 }
 
 export function Item({
   todo: { dateTime, isComplete, name },
   onCheckboxValueChange,
   onDeleteIconClick,
+  onEditIconClick,
 }: Props) {
   function getFormattedDateTime(timestamp: string) {
     const dateTime = new Date(Number(timestamp));
@@ -54,7 +56,7 @@ export function Item({
         <Text.DateTime>{getFormattedDateTime(dateTime)}</Text.DateTime>
       </Container.Details>
       <Container.Icons>
-        <MdEdit color="black" size={32} />
+        <MdEdit color="black" size={32} onClick={onEditIconClick} />
         <MdDelete color="red" size={32} onClick={onDeleteIconClick} />
       </Container.Icons>
     </Container.Main>

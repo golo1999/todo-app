@@ -5,8 +5,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 
 interface Props {
@@ -16,14 +14,9 @@ interface Props {
 }
 
 export function DeleteDialog({ isOpen, onClose, onDelete }: Props) {
-  const theme = useTheme();
-
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
-
   return (
     <Dialog
       aria-labelledby="responsive-dialog-title"
-      fullScreen={fullScreen}
       open={isOpen}
       onClose={onClose}
     >
@@ -35,7 +28,7 @@ export function DeleteDialog({ isOpen, onClose, onDelete }: Props) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button color="warning" variant="contained" onClick={onDelete}>
+        <Button color="error" variant="contained" onClick={onDelete}>
           Delete
         </Button>
       </DialogActions>

@@ -1,3 +1,7 @@
+import { FILTERING_ITEMS } from "consts";
+
+export type FilteringItem = (typeof FILTERING_ITEMS)[number];
+
 export type JsonPatchOperation = {
   op: "add" | "copy" | "move" | "remove" | "replace" | "test";
   path: string;

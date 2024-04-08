@@ -1,37 +1,29 @@
 import styled from "styled-components";
 
-interface StatusContainerProps {
-  $isSelected: boolean;
-}
-
 export const Container = {
   Footer: styled.div`
     align-items: center;
     color: gray;
     display: flex;
-    font-weight: 600;
+    font-weight: 500;
     gap: 1rem;
     justify-content: space-between;
     padding: 1rem;
+
+    @media screen {
+      @media (max-width: 425px) {
+        font-size: 13px;
+      }
+    }
   `,
   Main: styled.div`
     background-color: white;
     border-radius: 0.25rem;
     box-shadow: 0 0 5px darkgray;
   `,
-  Status: styled.li<StatusContainerProps>`
-    ${({ $isSelected }) => $isSelected && "color: royalblue;"};
-  `,
 };
 
 export const List = {
-  Statuses: styled.ul`
-    align-items: center;
-    display: flex;
-    gap: 0.5rem;
-    list-style-type: none;
-    user-select: none;
-  `,
   Todos: styled.ul`
     display: flex;
     flex-direction: column;

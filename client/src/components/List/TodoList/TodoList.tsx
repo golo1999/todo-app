@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useCallback, useMemo, useRef, useState } from "react";
 
-import { DeleteDialog, UpdateNameDialog } from "components";
+import { DeleteDialog, FilteringList, UpdateNameDialog } from "components";
+import { useWindowSize } from "hooks";
 import { JsonPatchOperation, Todo } from "models";
 import { useTodoStore } from "store";
 
@@ -9,23 +10,20 @@ import { Item } from "./Item";
 
 import { Container, List, Text } from "./TodoList.style";
 
-const TODO_LIST_STATUSES = ["ALL", "ACTIVE", "COMPLETED"] as const;
-
-type TodoListStatus = (typeof TODO_LIST_STATUSES)[number];
-
 export function TodoList() {
   const deletedTodoRef = useRef<Todo | null>(null);
   const updatedTodoRef = useRef<Todo | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isUpdateNameDialogOpen, setIsUpdateNameDialogOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<TodoListStatus>("ALL");
   const {
+    selectedFilteringItem,
     todoList,
     removeCompletedTodos,
     removeTodo,
     updateTodoCompleteStatus,
     updateTodoName,
   } = useTodoStore();
+  const { width } = useWindowSize();
 
   const deleteTodo = useCallback(
     async (id: number) => {
@@ -111,7 +109,7 @@ export function TodoList() {
   );
 
   const filteredTodos = useMemo(() => {
-    switch (selectedStatus) {
+    switch (selectedFilteringItem) {
       case "ACTIVE":
         return todoList.filter((todo) => !todo.isComplete);
       case "ALL":
@@ -119,7 +117,7 @@ export function TodoList() {
       case "COMPLETED":
         return todoList.filter((todo) => todo.isComplete);
     }
-  }, [selectedStatus, todoList]);
+  }, [selectedFilteringItem, todoList]);
   const completedTodos = useMemo(
     () => filteredTodos.filter((todo) => todo.isComplete),
     [filteredTodos]
@@ -178,30 +176,7 @@ export function TodoList() {
         </List.Todos>
         <Container.Footer>
           <p>{remainingTodosText}</p>
-          <List.Statuses>
-            {TODO_LIST_STATUSES.map((status, index) => {
-              function handleClick() {
-                if (selectedStatus !== status) {
-                  setSelectedStatus(status);
-                }
-              }
-
-              const formattedStatus = status
-                .substring(0, 1)
-                .concat(status.substring(1).toLowerCase());
-              const isSelected = selectedStatus === status;
-
-              return (
-                <Container.Status
-                  $isSelected={isSelected}
-                  key={index}
-                  onClick={handleClick}
-                >
-                  {formattedStatus}
-                </Container.Status>
-              );
-            })}
-          </List.Statuses>
+          {width >= 600 && <FilteringList />}
           <Text.ClearCompleted
             $isHidden={isClearCompletedTextHidden}
             onClick={handleClearCompletedClick}

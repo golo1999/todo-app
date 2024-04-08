@@ -1,18 +1,21 @@
 import { create } from "zustand";
 
-import { Todo } from "models";
+import { FilteringItem, Todo } from "models";
 
 type Store = {
+  selectedFilteringItem: FilteringItem;
   todoList: Todo[];
   addTodo: (todo: Todo) => void;
   removeCompletedTodos: () => void;
   removeTodo: (id: number) => void;
+  setSelectedFilteringItem: (item: FilteringItem) => void;
   setTodoList: (todoList: Todo[]) => void;
   updateTodoCompleteStatus: (id: number, newIsComplete: boolean) => void;
   updateTodoName: (id: number, newName: string) => void;
 };
 
 export const useTodoStore = create<Store>((set) => ({
+  selectedFilteringItem: "ALL",
   todoList: [],
   addTodo(todo) {
     const { todoList } = useTodoStore.getState();
@@ -31,6 +34,9 @@ export const useTodoStore = create<Store>((set) => ({
       ...state,
       todoList: todoList.filter((todo) => todo.id !== id),
     }));
+  },
+  setSelectedFilteringItem(item) {
+    set((state) => ({ ...state, selectedFilteringItem: item }));
   },
   setTodoList(todoList) {
     set((state) => ({ ...state, todoList }));

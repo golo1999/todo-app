@@ -1,7 +1,9 @@
+import { Checkbox } from "@mui/material";
 import axios from "axios";
 import { ChangeEvent, createRef, useEffect, useState } from "react";
 
-import { TodoList } from "components";
+import { FilteringList, TodoList } from "components";
+import { useWindowSize } from "hooks";
 import { Todo, TodoDto } from "models";
 import { useTodoStore } from "store";
 
@@ -10,7 +12,9 @@ import { Container, Icon, Input } from "./App.style";
 export function App() {
   const inputRef = createRef<HTMLInputElement>();
   const [isAddTodoIconVisible, setIsAddTodoIconVisible] = useState(false);
+  const [isTodoComplete, setIsTodoComplete] = useState(false);
   const { todoList, addTodo, setTodoList } = useTodoStore();
+  const { width } = useWindowSize();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -57,22 +61,34 @@ export function App() {
       return;
     }
 
-    const todoName = inputRef.current?.value.trim();
+    const name = inputRef.current.value.trim();
 
     createTodo({
-      isComplete: false,
-      name: todoName,
+      isComplete: isTodoComplete,
+      name,
       dateTime: new Date().getTime().toString(),
     });
     inputRef.current.value = "";
+    setIsAddTodoIconVisible(false);
+    setIsTodoComplete(false);
   }
 
+  const iconFontSize =
+    width <= 425 ? "small" : width <= 1440 ? "medium" : "large";
   const isTodoListVisible = todoList.length > 0;
 
   return (
     <Container.Main>
       <Container.Content>
-        <Container.Input>
+        <Container.HeaderFooter>
+          <Checkbox
+            checked={isTodoComplete}
+            color="primary"
+            inputProps={{ "aria-label": "controlled" }}
+            size={iconFontSize}
+            style={{ padding: 0 }}
+            onChange={({ target: { checked } }) => setIsTodoComplete(checked)}
+          />
           <Input
             placeholder="Create a new todo..."
             ref={inputRef}
@@ -81,10 +97,16 @@ export function App() {
           />
           <Icon.AddTodo
             $isVisible={isAddTodoIconVisible}
+            fontSize={iconFontSize}
             onClick={handleAddTodoIconClick}
           />
-        </Container.Input>
+        </Container.HeaderFooter>
         {isTodoListVisible && <TodoList />}
+        {width < 600 && isTodoListVisible && (
+          <Container.HeaderFooter $isCenteredHorizontally>
+            <FilteringList />
+          </Container.HeaderFooter>
+        )}
       </Container.Content>
     </Container.Main>
   );

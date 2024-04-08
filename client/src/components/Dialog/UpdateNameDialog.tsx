@@ -43,7 +43,7 @@ export function UpdateNameDialog({
       open={isOpen}
       onClose={onClose}
     >
-      <DialogTitle>Update todo name</DialogTitle>
+      <DialogTitle>Confirm update</DialogTitle>
       <DialogContent>
         <DialogContentText>
           Please enter the new todo name here.
